@@ -10,11 +10,10 @@ namespace Oak.Tests.describe_DynamicModel.describe_Association.Classes
     {
         Profiles profiles;
 
-        public Author(dynamic dto)
+        public Author(object dto)
+            : base(dto)
         {
             profiles = new Profiles();
-
-            Init(dto);
         }
 
         public IEnumerable<dynamic> Associates()

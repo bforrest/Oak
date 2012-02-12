@@ -16,6 +16,8 @@ namespace Oak
 
             if(o is ExpandoObject) return Convert(o as IDictionary<string, object>);
 
+            if (o is DynamicModel) return Convert(PublicAndDynamicProperties(o.InitIfNeeded()));
+
             if (o is Gemini) return Convert(PublicAndDynamicProperties(o));
 
             if (IsJsonString(o) || IsJsonNumeric(o) || IsBool(o)) return Stringify(o);

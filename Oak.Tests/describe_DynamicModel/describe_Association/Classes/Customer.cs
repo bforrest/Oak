@@ -11,13 +11,12 @@ namespace Oak.Tests.describe_DynamicModel.describe_Association.Classes
 
         DistributionChannels distributionChannel;
 
-        public Customer(dynamic dto)
+        public Customer(object dto)
+            : base(dto)
         {
             suppliers = new Suppliers();
 
             distributionChannel = new DistributionChannels();
-
-            Init(dto);
         }
 
         public IEnumerable<dynamic> Associates()

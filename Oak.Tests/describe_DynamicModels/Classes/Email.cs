@@ -7,9 +7,10 @@ namespace Oak.Tests.describe_DynamicModels.Classes
     {
         Aliases aliases = new Aliases();
 
-        public Email(dynamic dto)
+        public Email(object dto)
+            : base(dto)
         {
-            Init(dto);
+
         }
 
         public IEnumerable<dynamic> Associates()

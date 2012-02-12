@@ -9,11 +9,10 @@ namespace Oak.Tests.describe_DynamicModel.describe_Association.Classes
     {
         Blogs blogs;
 
-        public Comment(dynamic dto)
+        public Comment(object dto)
+            : base(dto)
         {
             blogs = new Blogs();
-
-            Init(dto);
         }
 
         public IEnumerable<dynamic> Associates()

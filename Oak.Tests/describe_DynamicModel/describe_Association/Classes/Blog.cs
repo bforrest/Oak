@@ -13,11 +13,10 @@ namespace Oak.Tests.describe_DynamicModel.describe_Association.Classes
 
         }
 
-        public Blog(dynamic entity)
+        public Blog(object entity)
+            : base(entity)
         {
             comments = new Comments();
-
-            Init(entity);
         }
 
         public IEnumerable<dynamic> Associates()

@@ -9,9 +9,9 @@ namespace Oak.Tests
 {
     public class SomeDynamicModel : DynamicModel
     {
-        public SomeDynamicModel(dynamic dto)
+        public SomeDynamicModel(object dto)
+            : base(dto)
         {
-            Init(dto);
         }
 
         public string Name

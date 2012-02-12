@@ -112,9 +112,11 @@ namespace Oak
             base.DeleteMember(member);
         }
 
-        private void InitIfNeeded()
+        public virtual dynamic InitIfNeeded()
         {
             if (!initialized) Init(dto);
+
+            return this;
         }
 
         public ExpandoObject TrackedProperties()
@@ -140,11 +142,15 @@ namespace Oak
 
         public IDictionary<string, object> TrackedHash()
         {
+            InitIfNeeded();
+
             return HashContaining(trackedProperties);
         }
 
         public IDictionary<string, object> UnTrackedHash()
         {
+            InitIfNeeded();
+
             return HashContaining(untrackedProperties);
         }
 
@@ -173,6 +179,13 @@ namespace Oak
             args.ForEach(s => expando.Add(s, GetMember(s)));
 
             return new Gemini(expando);
+        }
+
+        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+        {
+            InitIfNeeded();
+
+            return base.TryInvokeMember(binder, args, out result);
         }
     }
 }

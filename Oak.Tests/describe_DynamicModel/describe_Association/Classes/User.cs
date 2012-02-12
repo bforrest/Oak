@@ -15,7 +15,8 @@ namespace Oak.Tests.describe_DynamicModel.describe_Association.Classes
 
         public User() : this(new { }) { }
 
-        public User(dynamic entity)
+        public User(object dto)
+            : base(dto)
         {
             games = new Games();
 
@@ -24,8 +25,6 @@ namespace Oak.Tests.describe_DynamicModel.describe_Association.Classes
             users = new Users();
 
             friends = new Friends();
-
-            Init(entity);
         }
 
         public IEnumerable<dynamic> Associates()
