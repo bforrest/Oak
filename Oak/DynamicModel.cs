@@ -7,19 +7,29 @@ namespace Oak
 {
     public class DynamicModel : Gemini
     {
+        private object dto;
+
         private bool initialized;
 
         List<string> trackedProperties;
 
         List<string> untrackedProperties;
 
-        public DynamicModel()
+        public DynamicModel(object dto)
         {
+            this.dto = dto;
+
             initialized = false;
 
             trackedProperties = new List<string>();
 
             untrackedProperties = new List<string>();
+        }
+
+        public DynamicModel()
+            : this(new { })
+        {
+
         }
 
         public virtual dynamic Init()
@@ -44,14 +54,14 @@ namespace Oak
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            ThrowIfNotInitialized();
+            InitIfNeeded();
 
             return base.TryGetMember(binder, out result);
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            ThrowIfNotInitialized();
+            InitIfNeeded();
 
             TrackProperty(binder.Name, value);
 
@@ -60,21 +70,21 @@ namespace Oak
 
         public override dynamic GetMember(string property)
         {
-            ThrowIfNotInitialized();
+            InitIfNeeded();
 
             return base.GetMember(property);
         }
 
         public override bool RespondsTo(string property)
         {
-            ThrowIfNotInitialized();
+            InitIfNeeded();
 
             return base.RespondsTo(property);
         }
 
         public override void SetMember(string property, object value)
         {
-            ThrowIfNotInitialized();
+            InitIfNeeded();
 
             TrackProperty(property, value);
 
@@ -90,30 +100,34 @@ namespace Oak
 
         public override IEnumerable<string> Members()
         {
-            ThrowIfNotInitialized();
+            InitIfNeeded();
 
             return base.Members().ToList();
         }
 
         public override void DeleteMember(string member)
         {
-            ThrowIfNotInitialized();
+            InitIfNeeded();
 
             base.DeleteMember(member);
         }
 
-        private void ThrowIfNotInitialized()
+        private void InitIfNeeded()
         {
-            if (!initialized) throw new InvalidOperationException("DynamicModel must be initialized.  Call the Init method as the LAST statement in your constructors.");
+            if (!initialized) Init(dto);
         }
 
         public ExpandoObject TrackedProperties()
         {
+            InitIfNeeded();
+
             return ExpandoFor(TrackedHash());
         }
 
         public ExpandoObject UnTrackedProperties()
         {
+            InitIfNeeded();
+
             return ExpandoFor(UnTrackedHash());
         }
 

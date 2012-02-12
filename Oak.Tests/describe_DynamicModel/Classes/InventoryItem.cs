@@ -4,9 +4,10 @@ namespace Oak.Tests.describe_DynamicModel.Classes
 {
     public class InventoryItem : DynamicModel
     {
-        public InventoryItem(dynamic dto)
+        public InventoryItem(object dto)
+            : base(dto)
         {
-            Init(dto);
+
         }
     }
 }
