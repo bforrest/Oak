@@ -36,7 +36,7 @@ namespace Oak.Controllers
         /// AlterSampleTable() and AdHocChange()...you'll want to replace 
         /// this with your own set of methods.
         /// </summary>
-        public IEnumerable<Func<string>> Scripts()
+        public IEnumerable<Func<dynamic>> Scripts()
         {
             yield return CreateUsers;
 
@@ -53,6 +53,8 @@ namespace Oak.Controllers
             yield return AddConsoleToGames;
 
             yield return AddReturnDateToWantedGames;
+
+            yield return GameIdsFromIntToGuids;
         }
 
         /// <summary>
@@ -64,14 +66,14 @@ namespace Oak.Controllers
         [HttpPost]
         public ActionResult All()
         {
-            Scripts().ForEach<Func<string>>(s => s().ExecuteNonQuery());
+            Scripts().ForEach<Func<dynamic>>(s => Seed.ExecuteNonQuery(s()));
 
             return new EmptyResult();
         }
 
-        public void MigrateTo(Func<string> method)
+        public void MigrateUpTo(Func<dynamic> method)
         {
-            Seed.MigrateTo(Scripts(), method);
+            Seed.MigrateUpTo(Scripts(), method);
         }
 
         public string CreateUsers()
@@ -128,6 +130,20 @@ namespace Oak.Controllers
                 GameId(),
                 new { FromUserId = "int", ForeignKey = "Users(Id)" },
             });
+        }
+
+        public IEnumerable<string> GameIdsFromIntToGuids()
+        {
+            yield return Seed.DisableKeyConstaints();
+
+            yield return Seed.AddColumns("Games", new dynamic[] 
+            { 
+                new { Id2 = "uniqueidentifier", Default = "newid()", Nullable = false }
+            });
+
+            yield return "sp_rename 'Games.Id2', 'Id5', 'COLUMN'";
+
+            yield return Seed.EnableKeyConstraints();
         }
 
         public string AddConsoleToGames()

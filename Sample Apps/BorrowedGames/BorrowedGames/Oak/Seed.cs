@@ -70,7 +70,7 @@ namespace Oak
                 if (i != columns.Length - 1) columnString += ", ";
             }
 
-            return "ALTER TABLE [dbo].[{0}] ADD {1}"
+            return @"ALTER TABLE [dbo].[{0}] ADD {1}"
                 .With(table, columnString);
         }
 
@@ -144,7 +144,17 @@ namespace Oak
             }
         }
 
-        public void Export(string exportPath, IEnumerable<Func<string>> scripts)
+        public string DisableKeyConstaints()
+        {
+            return "EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT all';";
+        }
+
+        public string EnableKeyConstraints()
+        {
+            return "EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all';";
+        }
+
+        public void Export(string exportPath, IEnumerable<Func<dynamic>> scripts)
         {
             int order = 1;
 
@@ -156,13 +166,13 @@ namespace Oak
             });
         }
 
-        public void MigrateTo(IEnumerable<Func<string>> scripts, Func<string> method)
+        public void MigrateUpTo(IEnumerable<Func<dynamic>> scripts, Func<dynamic> method)
         {
-            foreach (Func<string> script in scripts)
+            foreach (Func<dynamic> script in scripts)
             {
-                script().ExecuteNonQuery();
-
                 if (script.Method == method.Method) break;
+
+                ExecuteNonQuery(script());
             }
         }
 
@@ -174,6 +184,13 @@ namespace Oak
         public object GuidId()
         {
             return new { Id = "uniqueidentifier", PrimaryKey = true };
+        }
+
+        public void ExecuteNonQuery(dynamic result)
+        {
+            if (result is string) (result as string).ExecuteNonQuery();
+
+            else foreach (var r in result) (r as string).ExecuteNonQuery();
         }
     }
 }
