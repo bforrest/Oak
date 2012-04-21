@@ -188,9 +188,17 @@ namespace Oak
 
         public void ExecuteNonQuery(dynamic result)
         {
-            if (result is string) (result as string).ExecuteNonQuery();
+            if (result is Delegate) ExecuteNonQuery(result());
+
+            else if (result is string) (result as string).ExecuteNonQuery();
 
             else foreach (var r in result) (r as string).ExecuteNonQuery();
+        }
+
+
+        public string RenameColumn(string table, string currentColumnName, string newColumnName)
+        {
+            return "sp_rename '{0}.{1}', '{2}', 'COLUMN'".With(table, currentColumnName, newColumnName);
         }
     }
 }

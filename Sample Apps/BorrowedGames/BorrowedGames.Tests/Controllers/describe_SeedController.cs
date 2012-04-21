@@ -16,7 +16,13 @@ namespace BorrowedGames.Tests.Controllers
 
         Games games;
 
-        object gameId;
+        Library library;
+
+        NotInterestedGames notInterestedGames;
+
+        WantedGames wantedGames;
+
+        object gameId, userId, userId2;
 
         void before_each()
         {
@@ -24,28 +30,75 @@ namespace BorrowedGames.Tests.Controllers
 
             games = new Games();
 
+            library = new Library();
+
+            notInterestedGames = new NotInterestedGames();
+
+            wantedGames = new WantedGames();
+
             controller.PurgeDb();
+        }
+
+        void SetupTwoUsers()
+        {
+            userId = new { Email = "user@example.com", Password = "password", Handle = "@user" }.InsertInto("Users");
+
+            userId2 = new { Email = "user2@example.com", Password = "password", Handle = "@user2" }.InsertInto("Users");
         }
 
         void games_converted_from_ints_to_guids()
         {
-            before = () => controller.MigrateUpTo(controller.GameIdsFromIntToGuids);
+            before = () =>
+            {
+                controller.MigrateUpTo(controller.GameIdsFromIntToGuids);
 
-            act = () => controller.Seed.ExecuteNonQuery(controller.GameIdsFromIntToGuids());
+                SetupTwoUsers();
+            };
 
-            context["games have already been added"] = () =>
+            act = () => controller.ExecuteNonQuery(controller.GameIdsFromIntToGuids);
+
+            context["game has already been added"] = () =>
             {
                 before = () => gameId = new { Name = "Gears of War" }.InsertInto("Games");
 
                 it["game's integer based id is converted to guid"] = () =>
                 {
-                    var game = games.All().First();
+                    var game = FirstGame();
+
+                    (game.Id.GetType() as Type).should_be(typeof(Guid));
 
                     (game.Name as string).should_be("Gears of War");
+                };
 
-                    (game.Id5.GetType() as Type).should_be(typeof(Guid));
+                context["user has game in library"] = () =>
+                {
+                    before = () => new { userId, gameId }.InsertInto("Library");
+
+                    it["the game in the user's library is also updated"] = () =>
+                        (library.All().First().GameId as object).should_be(FirstGame().Id as object);
+                };
+
+                context["user has game he is not interested in"] = () =>
+                {
+                    before = () => new { userId, gameId }.InsertInto("NotInterestedGames");
+
+                    it["the game in the user's not interested list is also updated"] = () =>
+                        (notInterestedGames.All().First().GameId as object).should_be(FirstGame().Id as object);
+                };
+
+                context["user wants game that another use has"] = () =>
+                {
+                    before = () => new { UserId = userId, GameId = gameId, FromUserId = userId2 }.InsertInto("WantedGames");
+
+                    it["the game in the wanted queue is also updated"] = () =>
+                        (wantedGames.All().First().GameId as object).should_be(FirstGame().Id as object);
                 };
             };
+        }
+
+        dynamic FirstGame()
+        {
+            return games.All().First();
         }
     }
 }

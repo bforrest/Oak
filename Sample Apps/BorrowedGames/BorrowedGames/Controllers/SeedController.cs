@@ -76,6 +76,11 @@ namespace Oak.Controllers
             Seed.MigrateUpTo(Scripts(), method);
         }
 
+        public void ExecuteNonQuery(Func<dynamic> script)
+        {
+            Seed.ExecuteNonQuery(script());
+        }
+
         public string CreateUsers()
         {
             return Seed.CreateTable("Users", new dynamic[] 
@@ -134,16 +139,57 @@ namespace Oak.Controllers
 
         public IEnumerable<string> GameIdsFromIntToGuids()
         {
-            yield return Seed.DisableKeyConstaints();
+            yield return Seed.RenameColumn("Games", "Id", "IdOld");
 
             yield return Seed.AddColumns("Games", new dynamic[] 
             { 
-                new { Id2 = "uniqueidentifier", Default = "newid()", Nullable = false }
+                new { Id = "uniqueidentifier", Default = "newid()", Nullable = false }
             });
 
-            yield return "sp_rename 'Games.Id2', 'Id5', 'COLUMN'";
+            yield return Seed.RenameColumn("Library", "GameId", "GameIdOld");
 
-            yield return Seed.EnableKeyConstraints();
+            yield return Seed.AddColumns("Library", new dynamic[] 
+            { 
+                new { GameId = "uniqueidentifier" }
+            });
+
+            yield return @"
+                update Library
+                set GameId = G.Id
+                from Library L
+                inner join Games G
+                on L.GameIdOld = G.IdOld
+            ";
+
+            yield return Seed.RenameColumn("NotInterestedGames", "GameId", "GameIdOld");
+
+            yield return Seed.AddColumns("NotInterestedGames", new dynamic[] 
+            { 
+                new { GameId = "uniqueidentifier" }
+            });
+
+            yield return @"
+                update NotInterestedGames
+                set GameId = G.Id
+                from NotInterestedGames N
+                inner join Games G
+                on N.GameIdOld = G.IdOld
+            ";
+
+            yield return Seed.RenameColumn("WantedGames", "GameId", "GameIdOld");
+
+            yield return Seed.AddColumns("WantedGames", new dynamic[] 
+            { 
+                new { GameId = "uniqueidentifier" }
+            });
+
+            yield return @"
+                update WantedGames
+                set GameId = G.Id
+                from WantedGames W
+                inner join Games G
+                on W.GameIdOld = G.IdOld
+            ";
         }
 
         public string AddConsoleToGames()
