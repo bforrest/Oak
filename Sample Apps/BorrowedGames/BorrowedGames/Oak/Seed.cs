@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace Oak
 {
-    [DebuggerNonUserCode]
+    //[DebuggerNonUserCode]
     public class Seed
     {
         public virtual ConnectionProfile ConnectionProfile { get; set; }
@@ -154,6 +154,16 @@ namespace Oak
 
                 order++;
             });
+        }
+
+        public void MigrateTo(IEnumerable<Func<string>> scripts, Func<string> method)
+        {
+            foreach (Func<string> script in scripts)
+            {
+                script().ExecuteNonQuery();
+
+                if (script.Method == method.Method) break;
+            }
         }
 
         public object Id()

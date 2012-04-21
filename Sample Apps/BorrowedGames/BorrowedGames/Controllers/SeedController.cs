@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using Oak;
 using BorrowedGames.Models;
+using System.Reflection;
 
 namespace Oak.Controllers
 {
@@ -12,7 +13,7 @@ namespace Oak.Controllers
     {
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            if(filterContext.RequestContext.HttpContext.Request.IsLocal == false)
+            if (filterContext.RequestContext.HttpContext.Request.IsLocal == false)
             {
                 filterContext.Result = new HttpNotFoundResult();
             }
@@ -35,98 +36,114 @@ namespace Oak.Controllers
         /// AlterSampleTable() and AdHocChange()...you'll want to replace 
         /// this with your own set of methods.
         /// </summary>
+        public IEnumerable<Func<string>> Scripts()
+        {
+            yield return CreateUsers;
+
+            yield return CreateGames;
+
+            yield return CreateLibrary;
+
+            yield return CreateFriends;
+
+            yield return CreateNotInterestedGames;
+
+            yield return CreateWantedGames;
+
+            yield return AddConsoleToGames;
+
+            yield return AddReturnDateToWantedGames;
+        }
+
+        /// <summary>
+        /// Change this method to create your tables.  Take a look 
+        /// at each method, CreateSampleTable(), CreateAnotherSampleTable(), 
+        /// AlterSampleTable() and AdHocChange()...you'll want to replace 
+        /// this with your own set of methods.
+        /// </summary>
         [HttpPost]
         public ActionResult All()
         {
-            CreateUsers();
-
-            CreateGames();
-
-            CreateLibrary();
-
-            CreateFriends();
-
-            CreateNotInterestedGames();
-
-            CreateWantedGames();
-
-            AddConsoleToGames();
-
-            AddReturnDateToWantedGames();
+            Scripts().ForEach<Func<string>>(s => s().ExecuteNonQuery());
 
             return new EmptyResult();
         }
 
-        private void CreateUsers()
+        public void MigrateTo(Func<string> method)
         {
-            Seed.CreateTable("Users", new dynamic[] 
+            Seed.MigrateTo(Scripts(), method);
+        }
+
+        public string CreateUsers()
+        {
+            return Seed.CreateTable("Users", new dynamic[] 
             { 
                 Id(),
                 new { Email = "nvarchar(1000)" },
                 new { Password = "nvarchar(100)" },
                 new { Handle = "nvarchar(1000)" }
-            }).ExecuteNonQuery();
+            });
         }
 
-        private void CreateGames()
+        public string CreateGames()
         {
-            Seed.CreateTable("Games", new dynamic[] {
+            return Seed.CreateTable("Games", new dynamic[] {
                 Id(),
                 new { Name = "nvarchar(1000)" }
-            }).ExecuteNonQuery();
+            });
         }
 
-        private void CreateLibrary()
+        public string CreateLibrary()
         {
-            Seed.CreateTable("Library", new dynamic[] {
+            return Seed.CreateTable("Library", new dynamic[] {
                 Id(),
                 UserId(),
                 GameId(),
-            }).ExecuteNonQuery();
+            });
         }
 
-        private void CreateFriends()
+        public string CreateFriends()
         {
-            Seed.CreateTable("FriendAssociations", new dynamic[] {
+            return Seed.CreateTable("FriendAssociations", new dynamic[] {
                 Id(),
                 UserId(),
                 new { IsFollowing = "int", ForeignKey = "Users(Id)" }
-            }).ExecuteNonQuery();
+            });
         }
 
-        private void CreateNotInterestedGames()
+        public string CreateNotInterestedGames()
         {
-            Seed.CreateTable("NotInterestedGames", new dynamic[] { 
+            return Seed.CreateTable("NotInterestedGames", new dynamic[] { 
                 Id(),
                 UserId(),
                 GameId(),
-            }).ExecuteNonQuery();
+            });
         }
 
-        private void CreateWantedGames()
+        public string CreateWantedGames()
         {
-            Seed.CreateTable("WantedGames", new dynamic[] {
+            return Seed.CreateTable("WantedGames", new dynamic[] {
                 Id(),
                 UserId(),
                 GameId(),
                 new { FromUserId = "int", ForeignKey = "Users(Id)" },
-            }).ExecuteNonQuery();
+            });
         }
 
-        private void AddConsoleToGames()
+        public string AddConsoleToGames()
         {
-            Seed.AddColumns("Games", new dynamic[] 
+            return Seed.AddColumns("Games", new dynamic[] 
             { 
                 new { Console = "nvarchar(255)" }
-            }).ExecuteNonQuery();
+            });
         }
 
-        private void AddReturnDateToWantedGames()
+        public string AddReturnDateToWantedGames()
         {
-            Seed.AddColumns("WantedGames", new dynamic[] 
+            return Seed.AddColumns("WantedGames", new dynamic[] 
             { 
                 new { ReturnDate = "datetime" }
-            }).ExecuteNonQuery();
+            });
         }
 
         private object Id()
@@ -321,7 +338,7 @@ namespace Oak.Controllers
                 "Your Shape: Fitness Evolved"
             );
 
-            SeedGames(amir, 
+            SeedGames(amir,
                 "Final Fantasy X|PS2",
                 "Gran Turismo 3 A-spec|PS2",
                 "Grand Theft Auto: Vice City|PS2",
@@ -465,7 +482,7 @@ namespace Oak.Controllers
         {
             //hey look, you can just do an ad hoc read
             var reader = "select * from SampleTable".ExecuteReader();
-            while(reader.Read())
+            while (reader.Read())
             {
                 //do stuff here
             }
