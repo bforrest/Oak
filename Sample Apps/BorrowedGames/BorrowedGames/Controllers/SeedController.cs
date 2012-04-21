@@ -247,6 +247,14 @@ namespace Oak.Controllers
             return new EmptyResult();
         }
 
+        [HttpPost]
+        public ActionResult DeleteAllRecords()
+        {
+            Seed.DeleteAllRecords();
+
+            return new EmptyResult();
+        }
+
         /// <summary>
         /// Create sample entries for your database in this method.
         /// </summary>

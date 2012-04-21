@@ -54,7 +54,11 @@ namespace BorrowedGames.Tests
 
         protected dynamic GivenGame(string name, string console = "XBOX360")
         {
-            return Convert.ToInt32(new { name, console }.InsertInto("Games"));
+            var id = Guid.NewGuid();
+
+            new { id, name, console }.InsertInto("Games");
+
+            return id;
         }
 
         protected dynamic GetSessionValue(string key)
@@ -103,14 +107,14 @@ namespace BorrowedGames.Tests
             new { UserId = userId, GameId = gameId }.InsertInto("Library");
         }
 
-        protected void GivenUserHasFriendWithGame(int userId, int isFollowing, int whoHasGame)
+        protected void GivenUserHasFriendWithGame(int userId, int isFollowing, Guid whoHasGame)
         {
             GivenUserIsFollowing(userId, isFollowing);
 
             GivenUserHasGame(isFollowing, whoHasGame);
         }
 
-        protected void GivenUserWantsGame(int userId, int fromUser, int game)
+        protected void GivenUserWantsGame(int userId, int fromUser, Guid game)
         {
             GivenUserHasFriendWithGame(userId, fromUser, game);
 

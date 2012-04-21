@@ -18,7 +18,7 @@ namespace BorrowedGames.Tests.Controllers.describe_GamesController
                 before = () => GivenUserWantsGame(friendId, fromUser: currentUserId, game: mirrorsEdgeId);
 
                 it["contains the friends request for game"] = () => 
-                    ((int)FirstRequestedGame().Id).should_be(mirrorsEdgeId);
+                    ((Guid)FirstRequestedGame().Id).should_be(mirrorsEdgeId);
 
                 it["contains the handle of the friend that requested the game"] = () => 
                     ((string)FirstRequestedGame().RequestedBy.Handle).should_be("@following");

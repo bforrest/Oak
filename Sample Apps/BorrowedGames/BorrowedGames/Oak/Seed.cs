@@ -215,6 +215,11 @@ namespace Oak
         {
             return "alter table {0} drop column {1}".With(table, column);
         }
+
+        public void DeleteAllRecords()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 
