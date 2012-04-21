@@ -63,19 +63,25 @@ namespace BorrowedGames.Tests.Controllers
 
                 it["game's integer based id is converted to guid"] = () =>
                 {
-                    var game = FirstGame();
+                    var game = Game();
 
                     (game.Id.GetType() as Type).should_be(typeof(Guid));
 
                     (game.Name as string).should_be("Gears of War");
                 };
 
+                it["old game id is removed"] = () =>
+                    ((bool)Game().RespondsTo("IdOld")).should_be_false();
+
                 context["user has game in library"] = () =>
                 {
                     before = () => new { userId, gameId }.InsertInto("Library");
 
                     it["the game in the user's library is also updated"] = () =>
-                        (library.All().First().GameId as object).should_be(FirstGame().Id as object);
+                        (Library().GameId as object).should_be(Game().Id as object);
+
+                    it["old game id is removed"] = () =>
+                        ((bool)Library().RespondsTo("GameIdOld")).should_be_false();
                 };
 
                 context["user has game he is not interested in"] = () =>
@@ -83,7 +89,10 @@ namespace BorrowedGames.Tests.Controllers
                     before = () => new { userId, gameId }.InsertInto("NotInterestedGames");
 
                     it["the game in the user's not interested list is also updated"] = () =>
-                        (notInterestedGames.All().First().GameId as object).should_be(FirstGame().Id as object);
+                        (NotInterestedGame().GameId as object).should_be(Game().Id as object);
+
+                    it["old game id is removed"] = () =>
+                        ((bool)NotInterestedGame().RespondsTo("GameIdOld")).should_be_false();
                 };
 
                 context["user wants game that another use has"] = () =>
@@ -91,14 +100,32 @@ namespace BorrowedGames.Tests.Controllers
                     before = () => new { UserId = userId, GameId = gameId, FromUserId = userId2 }.InsertInto("WantedGames");
 
                     it["the game in the wanted queue is also updated"] = () =>
-                        (wantedGames.All().First().GameId as object).should_be(FirstGame().Id as object);
+                        (WantedGame().GameId as object).should_be(Game().Id as object);
+
+                    it["old game id is removed"] = () =>
+                        ((bool)WantedGame().RespondsTo("GameIdOld")).should_be_false();
                 };
             };
         }
 
-        dynamic FirstGame()
+        dynamic Game()
         {
             return games.All().First();
+        }
+
+        dynamic NotInterestedGame()
+        {
+            return notInterestedGames.All().First();
+        }
+
+        dynamic WantedGame()
+        {
+            return wantedGames.All().First();
+        }
+
+        dynamic Library()
+        {
+            return library.All().First();
         }
     }
 }

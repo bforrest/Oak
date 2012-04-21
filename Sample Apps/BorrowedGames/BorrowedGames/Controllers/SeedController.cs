@@ -190,6 +190,22 @@ namespace Oak.Controllers
                 inner join Games G
                 on W.GameIdOld = G.IdOld
             ";
+
+            yield return Seed.DropConstraint("WantedGames", "GameIdOld");
+
+            yield return Seed.DropColumn("WantedGames", "GameIdOld");
+
+            yield return Seed.DropConstraint("NotInterestedGames", "GameIdOld");
+
+            yield return Seed.DropColumn("NotInterestedGames", "GameIdOld");
+
+            yield return Seed.DropConstraint("Library", "GameIdOld");
+
+            yield return Seed.DropColumn("Library", "GameIdOld");
+
+            yield return Seed.DropConstraint("Games", "IdOld");
+
+            yield return Seed.DropColumn("Games", "IdOld");
         }
 
         public string AddConsoleToGames()
