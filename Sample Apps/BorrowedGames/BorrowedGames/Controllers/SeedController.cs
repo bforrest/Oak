@@ -149,46 +149,8 @@ namespace Oak.Controllers
         {
             Seed.ExecuteNonQuery(script());
         }
-    }
 
-    [LocalOnly]
-    public class SeedController : Controller
-    {
-        public Seed Seed { get; set; }
-
-        public Schema Schema { get; set; }
-
-        public SeedController()
-        {
-            Seed = new Seed();
-
-            Schema = new Schema(Seed);
-        }
-
-        /// <summary>
-        /// Change this method to create your tables.  Take a look 
-        /// at each method, CreateSampleTable(), CreateAnotherSampleTable(), 
-        /// AlterSampleTable() and AdHocChange()...you'll want to replace 
-        /// this with your own set of methods.
-        /// </summary>
-        public IEnumerable<Func<dynamic>> Scripts()
-        {
-            return Schema.Scripts();
-        }
-
-        [HttpPost]
-        public ActionResult DeleteAllRecords()
-        {
-            Seed.DeleteAllRecords();
-
-            return new EmptyResult();
-        }
-
-        /// <summary>
-        /// Create sample entries for your database in this method.
-        /// </summary>
-        [HttpPost]
-        public ActionResult SampleEntries()
+        public void SampleEntries()
         {
             var amir = SeedUser("amirrajan");
 
@@ -422,8 +384,6 @@ namespace Oak.Controllers
                 "Trials HD",
                 "Your Shape: Fitness Evolved"
             );
-
-            return new EmptyResult();
         }
 
         private void SeedGame(string name, object userId)
@@ -459,6 +419,51 @@ namespace Oak.Controllers
         private object SeedUser(string handle)
         {
             return new { Email = handle + "@example.com", Password = "password", Handle = "@" + handle }.InsertInto("Users");
+        }
+    }
+
+    [LocalOnly]
+    public class SeedController : Controller
+    {
+        public Seed Seed { get; set; }
+
+        public Schema Schema { get; set; }
+
+        public SeedController()
+        {
+            Seed = new Seed();
+
+            Schema = new Schema(Seed);
+        }
+
+        /// <summary>
+        /// Change this method to create your tables.  Take a look 
+        /// at each method, CreateSampleTable(), CreateAnotherSampleTable(), 
+        /// AlterSampleTable() and AdHocChange()...you'll want to replace 
+        /// this with your own set of methods.
+        /// </summary>
+        public IEnumerable<Func<dynamic>> Scripts()
+        {
+            return Schema.Scripts();
+        }
+
+        [HttpPost]
+        public ActionResult DeleteAllRecords()
+        {
+            Seed.DeleteAllRecords();
+
+            return new EmptyResult();
+        }
+
+        /// <summary>
+        /// Create sample entries for your database in this method.
+        /// </summary>
+        [HttpPost]
+        public ActionResult SampleEntries()
+        {
+            Schema.SampleEntries();
+
+            return new EmptyResult();
         }
 
         protected override void OnException(ExceptionContext filterContext)
