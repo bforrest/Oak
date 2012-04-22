@@ -70,7 +70,7 @@ namespace Oak
                 if (i != columns.Length - 1) columnString += ", ";
             }
 
-            return "ALTER TABLE [dbo].[{0}] ADD {1}"
+            return @"ALTER TABLE [dbo].[{0}] ADD {1}"
                 .With(table, columnString);
         }
 
@@ -136,15 +136,33 @@ namespace Oak
 
         void DropAllTables()
         {
-            var reader = "select name as table_name from sysobjects where xtype = 'u'".ExecuteReader(ConnectionProfile);
+            var tables = Tables();
 
-            while (reader.Read())
-            {
-                "drop table {0} ".With(reader["table_name"]).ExecuteNonQuery(ConnectionProfile);
-            }
+            foreach (var table in tables) "drop table {0} ".With(table).ExecuteNonQuery(ConnectionProfile);
         }
 
-        public void Export(string exportPath, IEnumerable<Func<string>> scripts)
+        List<string> Tables()
+        {
+            var tables = new List<string>();
+
+            var reader = "select name as table_name from sysobjects where xtype = 'u'".ExecuteReader(ConnectionProfile);
+
+            while (reader.Read()) tables.Add(reader["table_name"] as string);
+
+            return tables;
+        }
+
+        public string DisableKeyConstaints()
+        {
+            return "EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT all';";
+        }
+
+        public string EnableKeyConstraints()
+        {
+            return "EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all';";
+        }
+
+        public void Export(string exportPath, IEnumerable<Func<dynamic>> scripts)
         {
             int order = 1;
 
@@ -156,11 +174,21 @@ namespace Oak
             });
         }
 
-        public void MigrateTo(IEnumerable<Func<string>> scripts, Func<string> method)
+        public void ExecuteUpTo(IEnumerable<Func<dynamic>> scripts, Func<dynamic> method)
         {
-            foreach (Func<string> script in scripts)
+            foreach (Func<dynamic> script in scripts)
             {
-                script().ExecuteNonQuery();
+                if (script.Method == method.Method) break;
+
+                ExecuteNonQuery(script());
+            }
+        }
+
+        public void ExecuteTo(IEnumerable<Func<dynamic>> scripts, Func<dynamic> method)
+        {
+            foreach (Func<dynamic> script in scripts)
+            {
+                ExecuteNonQuery(script());
 
                 if (script.Method == method.Method) break;
             }
@@ -174,6 +202,45 @@ namespace Oak
         public object GuidId()
         {
             return new { Id = "uniqueidentifier", PrimaryKey = true };
+        }
+
+        public void ExecuteNonQuery(dynamic result)
+        {
+            if (result is Delegate) ExecuteNonQuery(result());
+
+            else if (result is string) (result as string).ExecuteNonQuery(ConnectionProfile);
+
+            else foreach (var r in result) (r as string).ExecuteNonQuery(ConnectionProfile);
+        }
+
+
+        public string RenameColumn(string table, string currentColumnName, string newColumnName)
+        {
+            return "sp_rename '{0}.{1}', '{2}', 'COLUMN'".With(table, currentColumnName, newColumnName);
+        }
+
+        public string DropConstraint(string table, string forColumn)
+        {
+            var name = @"
+            select CONSTRAINT_NAME
+            from INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+            where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'".With(table, forColumn).ExecuteScalar(ConnectionProfile);
+
+            return "alter table {0} drop constraint {1}".With(table, name);
+        }
+
+        public string DropColumn(string table, string column)
+        {
+            return "alter table {0} drop column {1}".With(table, column);
+        }
+
+        public void DeleteAllRecords()
+        {
+            DisableKeyConstaints().ExecuteNonQuery(ConnectionProfile);
+
+            "EXEC sp_msforeachtable 'delete ?';".ExecuteNonQuery(ConnectionProfile);
+
+            EnableKeyConstraints().ExecuteNonQuery(ConnectionProfile);
         }
     }
 }

@@ -10,7 +10,9 @@ namespace BorrowedGames.Tests.Controllers.describe_GamesController
     {
         public GamesController controller;
 
-        public int mirrorsEdgeId, currentUserId, friendId, anotherFriendId, gearsOfWarId;
+        public int currentUserId, friendId, anotherFriendId;
+
+        public int gearsOfWarId, mirrorsEdgeId;
 
         void before_each()
         {
