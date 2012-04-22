@@ -12,8 +12,6 @@ namespace BorrowedGames.Tests.Controllers
 {
     class describe_SeedController : nspec
     {
-        SeedController controller;
-
         Games games;
 
         Library library;
@@ -24,9 +22,15 @@ namespace BorrowedGames.Tests.Controllers
 
         object gameId, userId, userId2;
 
+        Schema schema;
+
+        Seed seed;
+
         void before_each()
         {
-            controller = new SeedController();
+            seed = new Seed();
+
+            schema = new Schema(seed);
 
             games = new Games();
 
@@ -36,7 +40,7 @@ namespace BorrowedGames.Tests.Controllers
 
             wantedGames = new WantedGames();
 
-            controller.PurgeDb();
+            seed.PurgeDb();
         }
 
         void SetupTwoUsers()
@@ -50,12 +54,12 @@ namespace BorrowedGames.Tests.Controllers
         {
             before = () =>
             {
-                controller.MigrateUpTo(controller.GameIdsFromIntToGuids);
+                schema.MigrateUpTo(schema.GameIdsFromIntToGuids);
 
                 SetupTwoUsers();
             };
 
-            act = () => controller.ExecuteNonQuery(controller.GameIdsFromIntToGuids);
+            act = () => schema.ExecuteNonQuery(schema.GameIdsFromIntToGuids);
 
             context["game has already been added"] = () =>
             {
