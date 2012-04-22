@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Oak;
-using BorrowedGames.Models;
+using Oak.Controllers;
 
 namespace BorrowedGames.SchemaGen
 {

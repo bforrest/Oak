@@ -20,6 +20,137 @@ namespace Oak.Controllers
         }
     }
 
+    public class Schema
+    {
+        public Seed Seed { get; set; }
+
+        public Schema(Seed seed)
+        {
+            Seed = seed;
+        }
+
+        public IEnumerable<Func<dynamic>> Scripts()
+        {
+            yield return CreateUsers;
+
+            yield return CreateGames;
+
+            yield return CreateLibrary;
+
+            yield return CreateFriends;
+
+            yield return CreateNotInterestedGames;
+
+            yield return CreateWantedGames;
+
+            yield return AddConsoleToGames;
+
+            yield return AddReturnDateToWantedGames;
+        }
+
+        public Func<dynamic> Current()
+        {
+            return Scripts().Last();
+        }
+
+        public string CreateUsers()
+        {
+            return Seed.CreateTable("Users", new dynamic[] 
+            { 
+                Id(),
+                new { Email = "nvarchar(1000)" },
+                new { Password = "nvarchar(100)" },
+                new { Handle = "nvarchar(1000)" }
+            });
+        }
+
+        public string CreateGames()
+        {
+            return Seed.CreateTable("Games", new dynamic[] {
+                Id(),
+                new { Name = "nvarchar(1000)" }
+            });
+        }
+
+        public string CreateLibrary()
+        {
+            return Seed.CreateTable("Library", new dynamic[] {
+                Id(),
+                UserId(),
+                GameId(),
+            });
+        }
+
+        public string CreateFriends()
+        {
+            return Seed.CreateTable("FriendAssociations", new dynamic[] {
+                Id(),
+                UserId(),
+                new { IsFollowing = "int", ForeignKey = "Users(Id)" }
+            });
+        }
+
+        public string CreateNotInterestedGames()
+        {
+            return Seed.CreateTable("NotInterestedGames", new dynamic[] { 
+                Id(),
+                UserId(),
+                GameId(),
+            });
+        }
+
+        public string CreateWantedGames()
+        {
+            return Seed.CreateTable("WantedGames", new dynamic[] {
+                Id(),
+                UserId(),
+                GameId(),
+                new { FromUserId = "int", ForeignKey = "Users(Id)" },
+            });
+        }
+
+        public string AddConsoleToGames()
+        {
+            return Seed.AddColumns("Games", new dynamic[] 
+            { 
+                new { Console = "nvarchar(255)" }
+            });
+        }
+
+        public string AddReturnDateToWantedGames()
+        {
+            return Seed.AddColumns("WantedGames", new dynamic[] 
+            { 
+                new { ReturnDate = "datetime" }
+            });
+        }
+
+        private object Id()
+        {
+            return new { Id = "int", Identity = true, PrimaryKey = true };
+        }
+
+        private object UserId()
+        {
+            return new { UserId = "int", ForeignKey = "Users(Id)" };
+        }
+
+        private object GameId()
+        {
+            return new { GameId = "int", ForeignKey = "Games(Id)" };
+        }
+
+        public void MigrateUpTo(Func<dynamic> method)
+        {
+            Seed.ExecuteUpTo(Scripts(), method);
+        }
+
+        public void ExecuteNonQuery(Func<dynamic> script)
+        {
+            Seed.ExecuteNonQuery(script());
+        }
+    }
+
     [LocalOnly]
     public class SeedController : Controller
     {

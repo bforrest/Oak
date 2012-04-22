@@ -123,14 +123,14 @@ task :ui_tests do
   sh "BorrowedGames.UI.Tests\\bin\\Debug\\BorrowedGames.UI.Tests.exe"
 end
 
-desc " schema for both test and dev databases"
-task :update_schema => :build do
-  sh update_schema_command("Data Source=(local);Initial Catalog=BorrowedGames;Integrated Security=true")
+desc "purges the database and regenerates schema"
+task :regen_db => :build do
+  sh regen_db_command("Data Source=(local);Initial Catalog=BorrowedGames;Integrated Security=true")
 
-  sh update_schema_command("Data Source=(local);Initial Catalog=BorrowedGames_Test;Integrated Security=true")
+  sh regen_db_command("Data Source=(local);Initial Catalog=BorrowedGames_Test;Integrated Security=true")
 end
 
-def update_schema_command connection_string
+def regen_db_command connection_string
   exe_location = "BorrowedGames.SchemaGen\\bin\\debug\\BorrowedGames.SchemaGen.exe"
 
   return "#{ exe_location } \"#{ connection_string }\""
