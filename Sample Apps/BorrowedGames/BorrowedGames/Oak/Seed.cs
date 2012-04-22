@@ -136,12 +136,20 @@ namespace Oak
 
         void DropAllTables()
         {
+            var tables = Tables();
+
+            foreach (var table in tables) "drop table {0} ".With(table).ExecuteNonQuery(ConnectionProfile);
+        }
+
+        List<string> Tables()
+        {
+            var tables = new List<string>();
+
             var reader = "select name as table_name from sysobjects where xtype = 'u'".ExecuteReader(ConnectionProfile);
 
-            while (reader.Read())
-            {
-                "drop table {0} ".With(reader["table_name"]).ExecuteNonQuery(ConnectionProfile);
-            }
+            while (reader.Read()) tables.Add(reader["table_name"] as string);
+
+            return tables;
         }
 
         public string DisableKeyConstaints()
@@ -218,7 +226,11 @@ namespace Oak
 
         public void DeleteAllRecords()
         {
-            throw new NotImplementedException();
+            DisableKeyConstaints().ExecuteNonQuery();
+
+            "EXEC sp_msforeachtable 'delete ?';".ExecuteNonQuery();
+
+            EnableKeyConstraints().ExecuteNonQuery();
         }
     }
 }
