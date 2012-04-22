@@ -12,7 +12,7 @@ namespace BorrowedGames.Tests.Controllers.describe_GamesController
 
         public int currentUserId, friendId, anotherFriendId;
 
-        public Guid gearsOfWarId, mirrorsEdgeId;
+        public int gearsOfWarId, mirrorsEdgeId;
 
         void before_each()
         {
@@ -35,7 +35,7 @@ namespace BorrowedGames.Tests.Controllers.describe_GamesController
             gearsOfWarId = GivenGame("Gears of War");
         }
 
-        public dynamic PreferredGame(Guid gameId, int userId)
+        public dynamic PreferredGame(int gameId, int userId)
         {
             return PreferredGames().FirstOrDefault(s => s.Id == gameId && s.Owner.Id == userId);
         }
@@ -77,7 +77,7 @@ namespace BorrowedGames.Tests.Controllers.describe_GamesController
             return controller.NotInterested().Data;
         }
 
-        public bool IsWanted(Guid gameId, int userId)
+        public bool IsWanted(int gameId, int userId)
         {
             if (PreferredGame(gameId, userId) == null) return true;
 

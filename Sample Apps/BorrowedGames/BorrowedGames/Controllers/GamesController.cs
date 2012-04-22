@@ -31,31 +31,31 @@ namespace BorrowedGames.Controllers
         }
 
         [HttpPost]
-        public void NotInterested(Guid gameId)
+        public void NotInterested(int gameId)
         {
             User().MarkGameNotInterested(gameId);
         }
 
         [HttpPost]
-        public void WantGame(Guid gameId, int followingId)
+        public void WantGame(int gameId, int followingId)
         {
             User().WantGame(gameId, followingId);
         }
 
         [HttpPost]
-        public void DeleteWant(Guid gameId, int followingId)
+        public void DeleteWant(int gameId, int followingId)
         {
             User().DeleteWantedGame(gameId, followingId);
         }
 
         [HttpPost]
-        public void UndoNotInterested(Guid gameId)
+        public void UndoNotInterested(int gameId)
         {
             User().UndoNotInterestedGame(gameId);
         }
 
         [HttpPost]
-        public void GameGiven(Guid gameId, int toUserId)
+        public void GameGiven(int gameId, int toUserId)
         {
             User().GameGiven(gameId, toUserId);
         }

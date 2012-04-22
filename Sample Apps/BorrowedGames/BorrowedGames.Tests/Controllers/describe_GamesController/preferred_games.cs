@@ -26,14 +26,14 @@ namespace BorrowedGames.Tests.Controllers.describe_GamesController
 
                 it["contains a hypermedia link to not interested games"] = () => 
                 {
-                    Guid gameId = FirstPreferredGame().Id;
+                    int gameId = FirstPreferredGame().Id;
 
                     (FirstPreferredGame().NotInterested as string).should_be("/Games/NotInterested?gameId=" + gameId);
                 };
 
                 it["contains a hypermedia link to request game"] = () =>
                 {
-                    Guid gameId = FirstPreferredGame().Id;
+                    int gameId = FirstPreferredGame().Id;
 
                     (FirstPreferredGame().WantGame as string).should_be("/Games/WantGame?gameId=" + gameId + "&followingId=" + friendId);
                 };
