@@ -36,6 +36,11 @@ namespace BorrowedGames.Models
             yield return GameIdsFromIntToGuids;
         }
 
+        public Func<dynamic> Current()
+        {
+            return Scripts().Last();
+        }
+
         public string CreateUsers()
         {
             return Seed.CreateTable("Users", new dynamic[] 
@@ -196,7 +201,7 @@ namespace BorrowedGames.Models
 
         public void MigrateUpTo(Func<dynamic> method)
         {
-            Seed.MigrateUpTo(Scripts(), method);
+            Seed.ExecuteUpTo(Scripts(), method);
         }
 
         public void ExecuteNonQuery(Func<dynamic> script)

@@ -174,13 +174,23 @@ namespace Oak
             });
         }
 
-        public void MigrateUpTo(IEnumerable<Func<dynamic>> scripts, Func<dynamic> method)
+        public void ExecuteUpTo(IEnumerable<Func<dynamic>> scripts, Func<dynamic> method)
         {
             foreach (Func<dynamic> script in scripts)
             {
                 if (script.Method == method.Method) break;
 
                 ExecuteNonQuery(script());
+            }
+        }
+
+        public void ExecuteTo(IEnumerable<Func<dynamic>> scripts, Func<dynamic> method)
+        {
+            foreach (Func<dynamic> script in scripts)
+            {
+                ExecuteNonQuery(script());
+
+                if (script.Method == method.Method) break;
             }
         }
 
@@ -198,9 +208,9 @@ namespace Oak
         {
             if (result is Delegate) ExecuteNonQuery(result());
 
-            else if (result is string) (result as string).ExecuteNonQuery();
+            else if (result is string) (result as string).ExecuteNonQuery(ConnectionProfile);
 
-            else foreach (var r in result) (r as string).ExecuteNonQuery();
+            else foreach (var r in result) (r as string).ExecuteNonQuery(ConnectionProfile);
         }
 
 
@@ -214,7 +224,7 @@ namespace Oak
             var name = @"
             select CONSTRAINT_NAME
             from INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
-            where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'".With(table, forColumn).ExecuteScalar();
+            where TABLE_NAME = '{0}' and COLUMN_NAME = '{1}'".With(table, forColumn).ExecuteScalar(ConnectionProfile);
 
             return "alter table {0} drop constraint {1}".With(table, name);
         }
@@ -226,11 +236,11 @@ namespace Oak
 
         public void DeleteAllRecords()
         {
-            DisableKeyConstaints().ExecuteNonQuery();
+            DisableKeyConstaints().ExecuteNonQuery(ConnectionProfile);
 
-            "EXEC sp_msforeachtable 'delete ?';".ExecuteNonQuery();
+            "EXEC sp_msforeachtable 'delete ?';".ExecuteNonQuery(ConnectionProfile);
 
-            EnableKeyConstraints().ExecuteNonQuery();
+            EnableKeyConstraints().ExecuteNonQuery(ConnectionProfile);
         }
     }
 }

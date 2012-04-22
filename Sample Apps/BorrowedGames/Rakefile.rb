@@ -63,13 +63,13 @@ end
 
 desc "if you have the nuget package oak installed, use this to seed sample data"
 task :sample => :rake_dot_net_initialize do
-  reset_db
+  delete_all_records
   puts Net::HTTP.post_form(URI.parse("http://localhost:#{@website_port.to_s}/seed/SampleEntries"), { })
 end
 
 desc "if you have the nuget package oak installed, use this to reset the database"
 task :reset => :rake_dot_net_initialize do
-  reset_db
+  delete_all_records
 end
 
 desc "run nspec tests"
@@ -95,9 +95,8 @@ task :coffee => :rake_dot_net_initialize do
   build_coffee_scripts
 end
 
-def reset_db
-  puts Net::HTTP.post_form(URI.parse("http://localhost:#{@website_port.to_s}/seed/PurgeDb"), { })
-  puts Net::HTTP.post_form(URI.parse("http://localhost:#{@website_port.to_s}/seed/all"), { })
+def delete_all_records
+  puts Net::HTTP.post_form(URI.parse("http://localhost:#{@website_port.to_s}/seed/DeleteAllRecords"), { })
 end
 
 def build_coffee_scripts
@@ -122,4 +121,17 @@ end
 desc "runs ui tests (without building)"
 task :ui_tests do
   sh "BorrowedGames.UI.Tests\\bin\\Debug\\BorrowedGames.UI.Tests.exe"
+end
+
+desc " schema for both test and dev databases"
+task :update_schema => :build do
+  sh update_schema_command("Data Source=(local);Initial Catalog=BorrowedGames;Integrated Security=true")
+
+  sh update_schema_command("Data Source=(local);Initial Catalog=BorrowedGames_Test;Integrated Security=true")
+end
+
+def update_schema_command connection_string
+  exe_location = "BorrowedGames.SchemaGen\\bin\\debug\\BorrowedGames.SchemaGen.exe"
+
+  return "#{ exe_location } \"#{ connection_string }\""
 end

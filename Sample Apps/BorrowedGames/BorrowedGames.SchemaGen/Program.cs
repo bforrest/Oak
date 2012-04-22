@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Oak;
+using BorrowedGames.Models;
 
 namespace BorrowedGames.SchemaGen
 {
@@ -10,9 +11,21 @@ namespace BorrowedGames.SchemaGen
     {
         static void Main(string[] args)
         {
-            Seed seed = new Seed(new ConnectionProfile { ConnectionString = args[0] });
+            if (args.Length == 0) throw new InvalidOperationException("first argument should be a connection string.");
+
+            Console.WriteLine("Purging and regenerating schema for " + args[0] + ".");
+
+            var connection = new ConnectionProfile { ConnectionString = args[0] };
+
+            var seed = new Seed(connection);
+
+            var schema = new Schema(seed);
 
             seed.PurgeDb();
+
+            seed.ExecuteTo(schema.Scripts(), schema.Current());
+
+            Console.WriteLine("Done.");
         }
     }
 }
